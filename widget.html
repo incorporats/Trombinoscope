@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trombinoscope Widget</title>
+    <style>
+        :root {
+            --color-background: transparent;
+            --color-surface: #fffffe;
+            --color-text: #13343b;
+            --color-text-secondary: #626c71;
+            --color-primary: #21808d;
+            --color-primary-hover: #1d7480;
+            --color-card-border: rgba(94, 82, 64, 0.12);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --color-background: transparent;
+                --color-surface: #262828;
+                --color-text: #f5f5f5;
+                --color-text-secondary: rgba(167, 169, 169, 0.7);
+                --color-primary: #32b8c6;
+                --color-primary-hover: #2da6b2;
+                --color-card-border: rgba(119, 124, 124, 0.2);
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: var(--color-background);
+            color: var(--color-text);
+            padding: 1rem;
+            line-height: 1.6;
+        }
+
+        .trombinoscope {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .person-card {
+            background-color: var(--color-surface);
+            border: 1px solid var(--color-card-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+            transition: all 300ms cubic-bezier(0.16, 1, 0.3, 1);
+            animation: fadeIn 300ms ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .person-card:hover {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.04), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+            transform: translateY(-2px);
+        }
+
+        .avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: white;
+            font-weight: 600;
+            overflow: hidden;
+        }
+
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .avatar-initials {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        .person-name {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: var(--color-text);
+        }
+
+        .person-role {
+            font-size: 0.875rem;
+            color: var(--color-text-secondary);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--color-text-secondary);
+        }
+
+        @media (max-width: 768px) {
+            .trombinoscope {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js';
+        import { getDatabase, ref, onValue } from 'https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC9TtsRwS4acKC4OcHnNKMtD04qCVSqDJ8",
+            authDomain: "trombinoscope-43e94.firebaseapp.com",
+            databaseURL: "https://trombinoscope-43e94-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "trombinoscope-43e94",
+            storageBucket: "trombinoscope-43e94.firebasestorage.app",
+            messagingSenderId: "1085815401900",
+            appId: "1:1085815401900:web:5fd870a294fcf4d10f5e09"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const peopleRef = ref(db, 'people');
+
+        let people = [];
+
+        function getInitials(firstName, lastName) {
+            return (firstName.charAt(0) + lastName.charAt(0)).toUpperCase();
+        }
+
+        function render() {
+            const container = document.getElementById('trombinoscope');
+            
+            if (people.length === 0) {
+                container.innerHTML = '<div class="empty-state"><p>Aucune personne dans le trombinoscope</p></div>';
+                return;
+            }
+
+            container.innerHTML = '';
+
+            people.forEach(person => {
+                const card = document.createElement('div');
+                card.className = 'person-card';
+                
+                const avatarContent = person.photoUrl 
+                    ? `<img src="${person.photoUrl}" alt="${person.firstName} ${person.lastName}" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\\'avatar-initials\\'>${getInitials(person.firstName, person.lastName)}</div>';">`
+                    : `<div class="avatar-initials">${getInitials(person.firstName, person.lastName)}</div>`;
+                
+                card.innerHTML = `
+                    <div class="avatar">${avatarContent}</div>
+                    <div class="person-name">${person.firstName} ${person.lastName}</div>
+                    <div class="person-role">${person.role}</div>
+                    <div class="person-role">${person.specialty}</div>
+                    <div class="person-role" style="font-size: 0.8rem; margin-top: 0.5rem;">${person.email}</div>
+                    <div class="person-role" style="font-size: 0.8rem;">${person.phone}</div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        onValue(peopleRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                people = Object.keys(data).map(key => ({
+                    firebaseId: key,
+                    ...data[key]
+                }));
+            } else {
+                people = [];
+            }
+            render();
+        });
+    </script>
+
+    <div id="trombinoscope" class="trombinoscope"></div>
+</body>
+</html>
