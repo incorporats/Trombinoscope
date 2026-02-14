@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trombinoscope Dynamique</title>
+    <style>
+        :root {
+            --color-background: #fcfcf9;
+            --color-surface: #fffffe;
+            --color-text: #13343b;
+            --color-text-secondary: #626c71;
+            --color-primary: #21808d;
+            --color-primary-hover: #1d7480;
+            --color-border: rgba(94, 82, 64, 0.2);
+            --color-card-border: rgba(94, 82, 64, 0.12);
+            --color-error: #c0152f;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --color-background: #1f2121;
+                --color-surface: #262828;
+                --color-text: #f5f5f5;
+                --color-text-secondary: rgba(167, 169, 169, 0.7);
+                --color-primary: #32b8c6;
+                --color-primary-hover: #2da6b2;
+                --color-border: rgba(119, 124, 124, 0.3);
+                --color-card-border: rgba(119, 124, 124, 0.2);
+                --color-error: #ff5459;
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: var(--color-background);
+            color: var(--color-text);
+            padding: 2rem;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .controls {
+            background-color: var(--color-surface);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--color-card-border);
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            font-size: 0.875rem;
+            color: var(--color-text);
+        }
+
+        input {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            background-color: var(--color-surface);
+            color: var(--color-text);
+            transition: border-color 150ms ease;
+        }
+
+        input:focus {
+            outline: 2px solid var(--color-primary);
+            border-color: var(--color-primary);
+        }
+
+        button {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 250ms cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .btn-primary {
+            background-color: var(--color-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--color-primary-hover);
+        }
+
+        .btn-delete {
+            background-color: var(--color-error);
+            color: white;
+            padding: 0.375rem 0.75rem;
+            font-size: 0.75rem;
+        }
+
+        .btn-delete:hover {
+            opacity: 0.9;
+        }
+
+        .trombinoscope {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+            transition: all 300ms cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .person-card {
+            background-color: var(--color-surface);
+            border: 1px solid var(--color-card-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+            transition: all 300ms cubic-bezier(0.16, 1, 0.3, 1);
+            animation: fadeIn 300ms ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .person-card.removing {
+            animation: fadeOut 300ms ease forwards;
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+                transform: scale(1);
+            }
+            to {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+        }
+
+        .person-card:hover {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.04), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+            transform: translateY(-2px);
+        }
+
+        .avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: white;
+            font-weight: 600;
+            overflow: hidden;
+        }
+
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .avatar-initials {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        .person-name {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: var(--color-text);
+        }
+
+        .person-role {
+            font-size: 0.875rem;
+            color: var(--color-text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--color-text-secondary);
+        }
+
+        .empty-state p {
+            font-size: 1.125rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state small {
+            font-size: 0.875rem;
+        }
+
+        .navigation {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            justify-content: center;
+        }
+
+        .nav-btn {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            background-color: var(--color-surface);
+            color: var(--color-text);
+            border: 2px solid var(--color-border);
+        }
+
+        .nav-btn.active {
+            background-color: var(--color-primary);
+            color: white;
+            border-color: var(--color-primary);
+        }
+
+        .page-content {
+            animation: fadeIn 300ms ease;
+        }
+
+        .print-controls {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .print-trombinoscope {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        @media print {
+            .no-print, .navigation, h1, .btn-delete {
+                display: none !important;
+            }
+
+            body {
+                padding: 1rem;
+            }
+
+            .print-trombinoscope {
+                gap: 1rem;
+            }
+
+            .person-card {
+                page-break-inside: avoid;
+                box-shadow: none;
+                border: 1px solid #ccc;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            .trombinoscope {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 1rem;
+            }
+
+            .form-group {
+                flex-direction: column;
+            }
+
+            .input-wrapper {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js';
+        import { getDatabase, ref, onValue, push, remove, set } from 'https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js';
+
+        // Configuration Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyC9TtsRwS4acKC4OcHnNKMtD04qCVSqDJ8",
+            authDomain: "trombinoscope-43e94.firebaseapp.com",
+            databaseURL: "https://trombinoscope-43e94-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "trombinoscope-43e94",
+            storageBucket: "trombinoscope-43e94.firebasestorage.app",
+            messagingSenderId: "1085815401900",
+            appId: "1:1085815401900:web:5fd870a294fcf4d10f5e09"
+        };
+
+        let db;
+        let peopleRef;
+        
+        try {
+            const app = initializeApp(firebaseConfig);
+            db = getDatabase(app);
+            peopleRef = ref(db, 'people');
+            
+            // Écouter les changements en temps réel
+            onValue(peopleRef, (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    window.people = Object.keys(data).map(key => ({
+                        firebaseId: key,
+                        ...data[key]
+                    }));
+                } else {
+                    window.people = [];
+                }
+                renderTrombinoscope();
+            });
+            
+            window.firebaseReady = true;
+        } catch (error) {
+            console.error('Firebase non configuré:', error);
+            window.firebaseReady = false;
+        }
+
+        // Fonctions Firebase globales
+        window.addPersonToFirebase = async (person) => {
+            if (!window.firebaseReady) return;
+            try {
+                await push(peopleRef, person);
+            } catch (error) {
+                console.error('Erreur ajout:', error);
+            }
+        };
+
+        window.deletePersonFromFirebase = async (firebaseId) => {
+            if (!window.firebaseReady) return;
+            try {
+                await remove(ref(db, `people/${firebaseId}`));
+            } catch (error) {
+                console.error('Erreur suppression:', error);
+            }
+        };
+    </script>
+    <div class="container">
+        <nav class="navigation">
+            <button class="nav-btn active" onclick="showPage('gestion')">👥 Gestion</button>
+            <button class="nav-btn" onclick="showPage('impression')">🖨️ Impression</button>
+        </nav>
+
+        <h1 id="pageTitle">🎭 Gestion du Trombinoscope</h1>
+
+        <div id="gestionPage" class="page-content">
+        <div class="controls">
+            <form id="addPersonForm" class="form-group">
+                <div class="input-wrapper">
+                    <label for="firstName">Prénom</label>
+                    <input type="text" id="firstName" required placeholder="Jean">
+                </div>
+                <div class="input-wrapper">
+                    <label for="lastName">Nom</label>
+                    <input type="text" id="lastName" required placeholder="Dupont">
+                </div>
+                <div class="input-wrapper">
+                    <label for="role">Fonction</label>
+                    <input type="text" id="role" required placeholder="Médecin">
+                </div>
+                <div class="input-wrapper">
+                    <label for="specialty">Spécialité</label>
+                    <input type="text" id="specialty" required placeholder="Cardiologie">
+                </div>
+                <div class="input-wrapper">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" required placeholder="jean.dupont@exemple.fr">
+                </div>
+                <div class="input-wrapper">
+                    <label for="phone">Téléphone</label>
+                    <input type="tel" id="phone" required placeholder="01 23 45 67 89">
+                </div>
+                <div class="input-wrapper">
+                    <label for="photoFile">Photo (fichier)</label>
+                    <input type="file" id="photoFile" accept="image/*">
+                </div>
+                <button type="submit" class="btn-primary">Ajouter</button>
+            </form>
+        </div>
+
+        <div id="trombinoscope" class="trombinoscope"></div>
+        
+        <div id="emptyState" class="empty-state">
+            <p>Aucune personne dans le trombinoscope</p>
+            <small>Ajoutez des personnes en utilisant le formulaire ci-dessus</small>
+        </div>
+        </div>
+
+        <div id="impressionPage" class="page-content" style="display: none;">
+            <div class="print-controls no-print">
+                <button class="btn-primary" onclick="window.print()">🖨️ Imprimer le trombinoscope</button>
+            </div>
+            <div id="printTrombinoscope" class="print-trombinoscope"></div>
+            <div id="emptyStatePrint" class="empty-state">
+                <p>Aucune personne dans le trombinoscope</p>
+                <small>Ajoutez des personnes depuis la page Gestion</small>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Les données sont maintenant gérées par Firebase
+        window.people = [];
+
+        function getInitials(firstName, lastName) {
+            return (firstName.charAt(0) + lastName.charAt(0)).toUpperCase();
+        }
+
+        function renderTrombinoscope() {
+            const container = document.getElementById('trombinoscope');
+            const emptyState = document.getElementById('emptyState');
+            const printContainer = document.getElementById('printTrombinoscope');
+            const emptyStatePrint = document.getElementById('emptyStatePrint');
+
+            if (people.length === 0) {
+                emptyState.style.display = 'block';
+                container.style.display = 'none';
+                emptyStatePrint.style.display = 'block';
+                printContainer.style.display = 'none';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            container.style.display = 'grid';
+            emptyStatePrint.style.display = 'none';
+            printContainer.style.display = 'grid';
+            container.innerHTML = '';
+            printContainer.innerHTML = '';
+
+            people.forEach(person => {
+                const avatarContent = person.photoUrl 
+                    ? `<img src="${person.photoUrl}" alt="${person.firstName} ${person.lastName}" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\\'avatar-initials\\'>${getInitials(person.firstName, person.lastName)}</div>';">`
+                    : `<div class="avatar-initials">${getInitials(person.firstName, person.lastName)}</div>`;
+                
+                // Carte pour la page Gestion
+                const card = document.createElement('div');
+                card.className = 'person-card';
+                card.innerHTML = `
+                    <div class="avatar">${avatarContent}</div>
+                    <div class="person-name">${person.firstName} ${person.lastName}</div>
+                    <div class="person-role">${person.role}</div>
+                    <div class="person-role">${person.specialty}</div>
+                    <div class="person-role" style="font-size: 0.8rem; margin-top: 0.5rem;">${person.email}</div>
+                    <div class="person-role" style="font-size: 0.8rem;">${person.phone}</div>
+                    <button class="btn-delete" onclick="deletePerson('${person.firebaseId}')">Supprimer</button>
+                `;
+                container.appendChild(card);
+
+                // Carte pour la page Impression (sans bouton supprimer)
+                const printCard = document.createElement('div');
+                printCard.className = 'person-card';
+                printCard.innerHTML = `
+                    <div class="avatar">${avatarContent}</div>
+                    <div class="person-name">${person.firstName} ${person.lastName}</div>
+                    <div class="person-role">${person.role}</div>
+                    <div class="person-role">${person.specialty}</div>
+                    <div class="person-role" style="font-size: 0.8rem; margin-top: 0.5rem;">${person.email}</div>
+                    <div class="person-role" style="font-size: 0.8rem;">${person.phone}</div>
+                `;
+                printContainer.appendChild(printCard);
+            });
+        }
+
+        function showPage(pageName) {
+            const navBtns = document.querySelectorAll('.nav-btn');
+            const gestionPage = document.getElementById('gestionPage');
+            const impressionPage = document.getElementById('impressionPage');
+            const pageTitle = document.getElementById('pageTitle');
+
+            navBtns.forEach(btn => btn.classList.remove('active'));
+
+            if (pageName === 'gestion') {
+                gestionPage.style.display = 'block';
+                impressionPage.style.display = 'none';
+                pageTitle.textContent = '🎭 Gestion du Trombinoscope';
+                navBtns[0].classList.add('active');
+            } else if (pageName === 'impression') {
+                gestionPage.style.display = 'none';
+                impressionPage.style.display = 'block';
+                pageTitle.textContent = '🎭 Trombinoscope - Vue Impression';
+                navBtns[1].classList.add('active');
+            }
+        }
+
+        function deletePerson(firebaseId) {
+            if (window.firebaseReady) {
+                window.deletePersonFromFirebase(firebaseId);
+            }
+        }
+
+        document.getElementById('addPersonForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const firstName = document.getElementById('firstName').value.trim();
+            const lastName = document.getElementById('lastName').value.trim();
+            const role = document.getElementById('role').value.trim();
+            const specialty = document.getElementById('specialty').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const photoFile = document.getElementById('photoFile').files[0];
+
+            if (firstName && lastName && role && specialty && email && phone) {
+                if (photoFile) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        if (window.firebaseReady) {
+                            window.addPersonToFirebase({
+                                firstName,
+                                lastName,
+                                role,
+                                specialty,
+                                email,
+                                phone,
+                                photoUrl: e.target.result
+                            });
+                        }
+                        document.getElementById('firstName').value = '';
+                        document.getElementById('lastName').value = '';
+                        document.getElementById('role').value = '';
+                        document.getElementById('specialty').value = '';
+                        document.getElementById('email').value = '';
+                        document.getElementById('phone').value = '';
+                        document.getElementById('photoFile').value = '';
+                        document.getElementById('firstName').focus();
+                    };
+                    reader.readAsDataURL(photoFile);
+                } else {
+                    if (window.firebaseReady) {
+                        window.addPersonToFirebase({
+                            firstName,
+                            lastName,
+                            role,
+                            specialty,
+                            email,
+                            phone,
+                            photoUrl: ''
+                        });
+                    }
+                    document.getElementById('firstName').value = '';
+                    document.getElementById('lastName').value = '';
+                    document.getElementById('role').value = '';
+                    document.getElementById('specialty').value = '';
+                    document.getElementById('email').value = '';
+                    document.getElementById('phone').value = '';
+                    document.getElementById('photoFile').value = '';
+                    document.getElementById('firstName').focus();
+                }
+            }
+        });
+
+        renderTrombinoscope();
+    </script>
+</body>
+</html>
+
