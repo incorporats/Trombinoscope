@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trombinoscope</title>
+    <style>
+        :root {
+            --color-background: #fcfcf9;
+            --color-surface: #fffffe;
+            --color-text: #13343b;
+            --color-text-secondary: #626c71;
+            --color-primary: #21808d;
+            --color-primary-hover: #1d7480;
+            --color-border: rgba(94, 82, 64, 0.2);
+            --color-card-border: rgba(94, 82, 64, 0.12);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --color-background: #1f2121;
+                --color-surface: #262828;
+                --color-text: #f5f5f5;
+                --color-text-secondary: rgba(167, 169, 169, 0.7);
+                --color-primary: #32b8c6;
+                --color-primary-hover: #2da6b2;
+                --color-border: rgba(119, 124, 124, 0.3);
+                --color-card-border: rgba(119, 124, 124, 0.2);
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: var(--color-background);
+            color: var(--color-text);
+            padding: 2rem;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .controls {
+            background-color: var(--color-surface);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--color-card-border);
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            font-size: 0.875rem;
+            color: var(--color-text);
+        }
+
+        input {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            background-color: var(--color-surface);
+            color: var(--color-text);
+            transition: border-color 150ms ease;
+        }
+
+        input:focus {
+            outline: 2px solid var(--color-primary);
+            border-color: var(--color-primary);
+        }
+
+        button {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 250ms cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .btn-primary {
+            background-color: var(--color-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--color-primary-hover);
+        }
+
+        .trombinoscope {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+            transition: all 300ms cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .person-card {
+            background-color: var(--color-surface);
+            border: 1px solid var(--color-card-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+            transition: all 300ms cubic-bezier(0.16, 1, 0.3, 1);
+            animation: fadeIn 300ms ease;
+            cursor: pointer;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .person-card:hover {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.04), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+            transform: translateY(-2px);
+        }
+
+        .avatar {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: white;
+            font-weight: 600;
+            overflow: hidden;
+        }
+
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center 20%;
+        }
+
+        .avatar-initials {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        .person-name {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: var(--color-text);
+        }
+
+        .person-role {
+            font-size: 0.875rem;
+            color: var(--color-text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--color-text-secondary);
+        }
+
+        .empty-state p {
+            font-size: 1.125rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state small {
+            font-size: 0.875rem;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+
+        .pagination-btn {
+            padding: 0.5rem 1rem;
+            background-color: var(--color-surface);
+            color: var(--color-text);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 250ms ease;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .pagination-btn:hover:not(:disabled) {
+            background-color: var(--color-primary);
+            color: white;
+        }
+
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination-btn.active {
+            background-color: var(--color-primary);
+            color: white;
+        }
+
+        .pagination-info {
+            font-size: 0.875rem;
+            color: var(--color-text-secondary);
+            padding: 0.5rem 1rem;
+        }
+
+        .pagination-numbers {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .search-bar {
+            background-color: var(--color-surface);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--color-card-border);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .search-bar input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            background-color: var(--color-background);
+            color: var(--color-text);
+        }
+
+        .search-bar input:focus {
+            outline: 2px solid var(--color-primary);
+            border-color: var(--color-primary);
+        }
+
+        .search-icon {
+            font-size: 1.25rem;
+            color: var(--color-text-secondary);
+        }
+
+        .per-page-selector {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
+
+        .per-page-selector select {
+            padding: 0.5rem;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            background-color: var(--color-surface);
+            color: var(--color-text);
+            cursor: pointer;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: var(--color-surface);
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            animation: modalSlideIn 300ms ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--color-text-secondary);
+            padding: 0.5rem;
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            color: var(--color-text);
+        }
+
+        .modal-avatar {
+            width: 250px;
+            height: 250px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
+            margin: 0 auto 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 5rem;
+            color: white;
+            font-weight: 600;
+            overflow: hidden;
+        }
+
+        .modal-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center 20%;
+        }
+
+        .btn-edit {
+            background-color: var(--color-primary);
+            color: white;
+            padding: 0.375rem 0.75rem;
+            font-size: 0.75rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 250ms ease;
+            margin-top: 0.5rem;
+        }
+
+        .btn-edit:hover {
+            background-color: var(--color-primary-hover);
+        }
+
+        .btn-delete {
+            background-color: var(--color-error);
+            color: white;
+            padding: 0.375rem 0.75rem;
+            font-size: 0.75rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 250ms ease;
+            margin-top: 0.5rem;
+        }
+
+        .btn-delete:hover {
+            opacity: 0.9;
+        }
+
+        .modal-name {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            text-align: center;
+            color: var(--color-text);
+        }
+
+        .modal-info {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .modal-info-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1rem;
+        }
+
+        .modal-info-label {
+            font-weight: 600;
+            color: var(--color-text);
+            min-width: 100px;
+        }
+
+        .modal-info-value {
+            color: var(--color-text-secondary);
+        }
+
+        .modal-info-value a {
+            color: var(--color-primary);
+            text-decoration: none;
+        }
+
+        .modal-info-value a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .form-group {
+                flex-direction: column;
+            }
+
+            .input-wrapper {
+                width: 100%;
+            }
+
+            .modal-content {
+                padding: 1.5rem;
+            }
+
+            .modal-avatar {
+                width: 150px;
+                height: 150px;
+                font-size: 4rem;
+            }
+
+            .modal-name {
+                font-size: 1.25rem;
+            }
+
+            .modal-info-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.25rem;
+            }
+
+            .modal-info-label {
+                min-width: auto;
+            }
+
+            .trombinoscope {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                gap: 1rem;
+            }
+
+            .person-card {
+                padding: 1rem;
+            }
+
+            .avatar {
+                width: 100px;
+                height: 100px;
+                font-size: 2.5rem;
+            }
+
+            .person-name {
+                font-size: 1rem;
+            }
+
+            .person-role {
+                font-size: 0.8rem;
+            }
+
+            .pagination {
+                gap: 0.5rem;
+            }
+
+            .pagination-btn {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js';
+        import { getDatabase, ref, onValue } from 'https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC9TtsRwS4acKC4OcHnNKMtD04qCVSqDJ8",
+            authDomain: "trombinoscope-43e94.firebaseapp.com",
+            databaseURL: "https://trombinoscope-43e94-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "trombinoscope-43e94",
+            storageBucket: "trombinoscope-43e94.firebasestorage.app",
+            messagingSenderId: "1085815401900",
+            appId: "1:1085815401900:web:5fd870a294fcf4d10f5e09"
+        };
+
+        let db;
+        let peopleRef;
+        
+        window.addPersonToFirebase = null;
+        window.deletePersonFromFirebase = null;
+
+        try {
+            const app = initializeApp(firebaseConfig);
+            db = getDatabase(app);
+            peopleRef = ref(db, 'people');
+            
+            onValue(peopleRef, (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    window.people = Object.keys(data).map(key => ({
+                        firebaseId: key,
+                        ...data[key]
+                    })).sort((a, b) => {
+                        const nameA = (a.lastName || '').toLowerCase();
+                        const nameB = (b.lastName || '').toLowerCase();
+                        return nameA.localeCompare(nameB);
+                    });
+                } else {
+                    window.people = [];
+                }
+                filteredPeople = window.people;
+                renderTrombinoscope();
+            });
+            
+            window.firebaseReady = true;
+
+            const { push, remove } = await import('https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js');
+            
+            window.addPersonToFirebase = async (person) => {
+                try {
+                    await push(peopleRef, person);
+                } catch (error) {
+                    console.error('Erreur ajout:', error);
+                }
+            };
+
+            window.deletePersonFromFirebase = async (firebaseId) => {
+                try {
+                    const { ref: dbRef } = await import('https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js');
+                    await remove(dbRef(db, `people/${firebaseId}`));
+                } catch (error) {
+                    console.error('Erreur suppression:', error);
+                }
+            };
+        } catch (error) {
+            console.error('Firebase non configuré:', error);
+            window.firebaseReady = false;
+        }
+    </script>
+
+    <div class="container">
+        <h1>🎭 Gestion du Trombinoscope</h1>
+
+        <div class="controls">
+            <form id="addPersonForm" class="form-group">
+                <div class="input-wrapper">
+                    <label for="lastName">Nom</label>
+                    <input type="text" id="lastName" placeholder="Dupont">
+                </div>
+                <div class="input-wrapper">
+                    <label for="firstName">Prénom</label>
+                    <input type="text" id="firstName" placeholder="Jean">
+                </div>
+                <div class="input-wrapper">
+                    <label for="isDoctor">
+                        <input type="checkbox" id="isDoctor" style="width: auto; margin-right: 0.5rem;">
+                        Docteur
+                    </label>
+                </div>
+                <div class="input-wrapper">
+                    <label for="role">Fonction</label>
+                    <input type="text" id="role" placeholder="Médecin">
+                </div>
+                <div class="input-wrapper">
+                    <label for="specialty">Spécialité</label>
+                    <input type="text" id="specialty" placeholder="Cardiologie">
+                </div>
+                <div class="input-wrapper">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" placeholder="jean.dupont@exemple.fr">
+                </div>
+                <div class="input-wrapper">
+                    <label for="phone">Téléphone</label>
+                    <input type="tel" id="phone" placeholder="01 23 45 67 89">
+                </div>
+                <div class="input-wrapper">
+                    <label for="photoFile">Photo (fichier)</label>
+                    <input type="file" id="photoFile" accept="image/*">
+                </div>
+                <button type="submit" class="btn-primary">Ajouter</button>
+            </form>
+        </div>
+
+        <div class="search-bar">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchInput" placeholder="Rechercher par nom, prénom, fonction ou spécialité..." oninput="searchPeople()">
+        </div>
+
+        <div class="per-page-selector">
+            <label for="perPage">Personnes par page:</label>
+            <select id="perPage" onchange="changePerPage()">
+                <option value="5">5</option>
+                <option value="10" selected>10</option>
+                <option value="15">15</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+            </select>
+        </div>
+
+        <div id="trombinoscope" class="trombinoscope"></div>
+        
+        <div class="pagination" id="pagination" style="display: none;">
+            <button class="pagination-btn" onclick="goToPage(1)" id="firstPageBtn">⏮️ Première</button>
+            <button class="pagination-btn" onclick="previousPage()" id="prevBtn">◀️ Précédent</button>
+            <div class="pagination-numbers" id="pageNumbers"></div>
+            <span class="pagination-info" id="pageInfo"></span>
+            <button class="pagination-btn" onclick="nextPage()" id="nextBtn">Suivant ▶️</button>
+            <button class="pagination-btn" onclick="goToPage('last')" id="lastPageBtn">Dernière ⏭️</button>
+        </div>
+        
+        <div id="emptyState" class="empty-state">
+            <p>Aucune personne dans le trombinoscope</p>
+            <small>Le trombinoscope se mettra à jour automatiquement</small>
+        </div>
+    </div>
+
+    <div id="modal" class="modal" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <script>
+        window.people = [];
+        let filteredPeople = [];
+        let currentPage = 1;
+        let itemsPerPage = 10;
+
+        function getInitials(firstName, lastName) {
+            const first = firstName ? firstName.charAt(0) : '';
+            const last = lastName ? lastName.charAt(0) : '';
+            return (first + last).toUpperCase();
+        }
+
+        function getFullName(person) {
+            const title = person.isDoctor ? 'Dr ' : '';
+            const lastName = person.lastName || '';
+            const firstName = person.firstName || '';
+            const fullName = `${lastName} ${firstName}`.trim();
+            return fullName ? `${title}${fullName}` : '';
+        }
+
+        function searchPeople() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            
+            if (searchTerm === '') {
+                filteredPeople = people;
+            } else {
+                filteredPeople = people.filter(person => {
+                    const firstName = (person.firstName || '').toLowerCase();
+                    const lastName = (person.lastName || '').toLowerCase();
+                    const role = (person.role || '').toLowerCase();
+                    const specialty = (person.specialty || '').toLowerCase();
+                    
+                    return firstName.includes(searchTerm) || 
+                           lastName.includes(searchTerm) || 
+                           role.includes(searchTerm) || 
+                           specialty.includes(searchTerm);
+                });
+            }
+            
+            currentPage = 1;
+            renderTrombinoscope();
+        }
+
+        function renderTrombinoscope() {
+            const container = document.getElementById('trombinoscope');
+            const emptyState = document.getElementById('emptyState');
+            const pagination = document.getElementById('pagination');
+
+            const displayPeople = filteredPeople.length > 0 || document.getElementById('searchInput').value.trim() !== '' ? filteredPeople : people;
+
+            if (displayPeople.length === 0) {
+                emptyState.style.display = 'block';
+                container.style.display = 'none';
+                pagination.style.display = 'none';
+                
+                if (document.getElementById('searchInput').value.trim() !== '') {
+                    emptyState.querySelector('p').textContent = 'Aucun résultat trouvé';
+                    emptyState.querySelector('small').textContent = 'Essayez une autre recherche';
+                } else {
+                    emptyState.querySelector('p').textContent = 'Aucune personne dans le trombinoscope';
+                    emptyState.querySelector('small').textContent = 'Le trombinoscope se mettra à jour automatiquement';
+                }
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            container.style.display = 'grid';
+
+            const totalPages = Math.ceil(displayPeople.length / itemsPerPage);
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const currentPeople = displayPeople.slice(startIndex, endIndex);
+
+            if (totalPages > 1) {
+                pagination.style.display = 'flex';
+                updatePagination(totalPages);
+            } else {
+                pagination.style.display = 'none';
+            }
+
+            container.innerHTML = '';
+
+            currentPeople.forEach(person => {
+                const avatarContent = person.photoUrl 
+                    ? `<img src="${person.photoUrl}" alt="${getFullName(person)}" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\\'avatar-initials\\'>${getInitials(person.firstName, person.lastName)}</div>';">`
+                    : `<div class="avatar-initials">${getInitials(person.firstName, person.lastName)}</div>`;
+                
+                const emailLink = person.email ? `<a href="mailto:${person.email}" style="color: var(--color-primary); text-decoration: none;">${person.email}</a>` : '';
+                
+                const card = document.createElement('div');
+                card.className = 'person-card';
+                card.innerHTML = `
+                    <div class="avatar">${avatarContent}</div>
+                    <div class="person-name">${getFullName(person)}</div>
+                    <div class="person-role">${person.role || ''}</div>
+                    <div class="person-role">${person.specialty || ''}</div>
+                    <button class="btn-edit" onclick="event.stopPropagation(); editPerson('${person.firebaseId}')">✏️ Modifier</button>
+                    <button class="btn-delete" onclick="event.stopPropagation(); deletePerson('${person.firebaseId}')">Supprimer</button>
+                `;
+                card.onclick = () => openModal(person);
+                container.appendChild(card);
+            });
+        }
+
+        function updatePagination(totalPages) {
+            const pageInfo = document.getElementById('pageInfo');
+            const pageNumbers = document.getElementById('pageNumbers');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const firstPageBtn = document.getElementById('firstPageBtn');
+            const lastPageBtn = document.getElementById('lastPageBtn');
+
+            pageInfo.textContent = `Page ${currentPage} / ${totalPages}`;
+
+            prevBtn.disabled = currentPage === 1;
+            firstPageBtn.disabled = currentPage === 1;
+            nextBtn.disabled = currentPage === totalPages;
+            lastPageBtn.disabled = currentPage === totalPages;
+
+            pageNumbers.innerHTML = '';
+            
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(totalPages, currentPage + 2);
+
+            if (currentPage <= 3) {
+                endPage = Math.min(5, totalPages);
+            }
+            if (currentPage > totalPages - 3) {
+                startPage = Math.max(1, totalPages - 4);
+            }
+
+            if (startPage > 1) {
+                const btn = document.createElement('button');
+                btn.className = 'pagination-btn';
+                btn.textContent = '1';
+                btn.onclick = () => goToPage(1);
+                pageNumbers.appendChild(btn);
+
+                if (startPage > 2) {
+                    const dots = document.createElement('span');
+                    dots.textContent = '...';
+                    dots.style.padding = '0.5rem';
+                    pageNumbers.appendChild(dots);
+                }
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                const btn = document.createElement('button');
+                btn.className = 'pagination-btn';
+                if (i === currentPage) {
+                    btn.classList.add('active');
+                }
+                btn.textContent = i;
+                btn.onclick = () => goToPage(i);
+                pageNumbers.appendChild(btn);
+            }
+
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    const dots = document.createElement('span');
+                    dots.textContent = '...';
+                    dots.style.padding = '0.5rem';
+                    pageNumbers.appendChild(dots);
+                }
+
+                const btn = document.createElement('button');
+                btn.className = 'pagination-btn';
+                btn.textContent = totalPages;
+                btn.onclick = () => goToPage(totalPages);
+                pageNumbers.appendChild(btn);
+            }
+        }
+
+        function goToPage(page) {
+            const displayPeople = filteredPeople.length > 0 || document.getElementById('searchInput').value.trim() !== '' ? filteredPeople : people;
+            const totalPages = Math.ceil(displayPeople.length / itemsPerPage);
+            
+            if (page === 'last') {
+                currentPage = totalPages;
+            } else {
+                currentPage = Math.max(1, Math.min(page, totalPages));
+            }
+            
+            renderTrombinoscope();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function nextPage() {
+            const displayPeople = filteredPeople.length > 0 || document.getElementById('searchInput').value.trim() !== '' ? filteredPeople : people;
+            const totalPages = Math.ceil(displayPeople.length / itemsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderTrombinoscope();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function previousPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                renderTrombinoscope();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function changePerPage() {
+            itemsPerPage = parseInt(document.getElementById('perPage').value);
+            currentPage = 1;
+            renderTrombinoscope();
+        }
+
+        function openModal(person) {
+            const modal = document.getElementById('modal');
+            const modalBody = document.getElementById('modalBody');
+            
+            const avatarContent = person.photoUrl 
+                ? `<img src="${person.photoUrl}" alt="${getFullName(person)}">`
+                : `<div class="avatar-initials">${getInitials(person.firstName, person.lastName)}</div>`;
+            
+            modalBody.innerHTML = `
+                <div class="modal-avatar">${avatarContent}</div>
+                <div class="modal-name">${getFullName(person)}</div>
+                <div class="modal-info">
+                    ${person.role ? `
+                        <div class="modal-info-item">
+                            <span class="modal-info-label">Fonction:</span>
+                            <span class="modal-info-value">${person.role}</span>
+                        </div>
+                    ` : ''}
+                    ${person.specialty ? `
+                        <div class="modal-info-item">
+                            <span class="modal-info-label">Spécialité:</span>
+                            <span class="modal-info-value">${person.specialty}</span>
+                        </div>
+                    ` : ''}
+                    ${person.email ? `
+                        <div class="modal-info-item">
+                            <span class="modal-info-label">Email:</span>
+                            <span class="modal-info-value"><a href="mailto:${person.email}">${person.email}</a></span>
+                        </div>
+                    ` : ''}
+                    ${person.phone ? `
+                        <div class="modal-info-item">
+                            <span class="modal-info-label">Téléphone:</span>
+                            <span class="modal-info-value"><a href="tel:${person.phone}">${person.phone}</a></span>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+            
+            modal.classList.add('active');
+        }
+
+        function closeModal(event) {
+            if (!event || event.target === event.currentTarget) {
+                document.getElementById('modal').classList.remove('active');
+            }
+        }
+
+        function editPerson(firebaseId) {
+            const person = people.find(p => p.firebaseId === firebaseId);
+            if (!person) return;
+
+            document.getElementById('firstName').value = person.firstName || '';
+            document.getElementById('lastName').value = person.lastName || '';
+            document.getElementById('isDoctor').checked = person.isDoctor || false;
+            document.getElementById('role').value = person.role || '';
+            document.getElementById('specialty').value = person.specialty || '';
+            document.getElementById('email').value = person.email || '';
+            document.getElementById('phone').value = person.phone || '';
+
+            const form = document.getElementById('addPersonForm');
+            form.dataset.editingId = firebaseId;
+            
+            const submitBtn = form.querySelector('button[type="submit"]');
+            submitBtn.textContent = 'Mettre à jour';
+            submitBtn.style.backgroundColor = '#e67e22';
+
+            document.getElementById('lastName').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function deletePerson(firebaseId) {
+            if (window.firebaseReady) {
+                window.deletePersonFromFirebase(firebaseId);
+            }
+        }
+
+        document.getElementById('addPersonForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const firstName = document.getElementById('firstName').value.trim();
+            const lastName = document.getElementById('lastName').value.trim();
+            const isDoctor = document.getElementById('isDoctor').checked;
+            const role = document.getElementById('role').value.trim();
+            const specialty = document.getElementById('specialty').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const photoFile = document.getElementById('photoFile').files[0];
+            const form = e.target;
+            const editingId = form.dataset.editingId;
+
+            if (firstName || lastName || role || specialty || email || phone) {
+                const personData = { firstName, lastName, isDoctor, role, specialty, email, phone };
+
+                const processData = (photoUrl = '') => {
+                    personData.photoUrl = photoUrl;
+                    
+                    if (window.firebaseReady) {
+                        if (editingId) {
+                            import('https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js').then(({ ref, set, getDatabase }) => {
+                                const db = getDatabase();
+                                set(ref(db, `people/${editingId}`), personData);
+                            });
+                        } else {
+                            window.addPersonToFirebase(personData);
+                        }
+                    }
+
+                    document.getElementById('firstName').value = '';
+                    document.getElementById('lastName').value = '';
+                    document.getElementById('isDoctor').checked = false;
+                    document.getElementById('role').value = '';
+                    document.getElementById('specialty').value = '';
+                    document.getElementById('email').value = '';
+                    document.getElementById('phone').value = '';
+                    document.getElementById('photoFile').value = '';
+                    delete form.dataset.editingId;
+                    
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    submitBtn.textContent = 'Ajouter';
+                    submitBtn.style.backgroundColor = '';
+                    
+                    document.getElementById('lastName').focus();
+                };
+
+                if (photoFile) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        processData(e.target.result);
+                    };
+                    reader.readAsDataURL(photoFile);
+                } else {
+                    const existingPerson = people.find(p => p.firebaseId === editingId);
+                    processData(existingPerson?.photoUrl || '');
+                }
+            }
+        });
+
+        renderTrombinoscope();
+    </script>
+</body>
+</html>
