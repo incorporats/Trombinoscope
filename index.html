@@ -1144,7 +1144,7 @@ function openPrintableView() {
       <style>
         @page {
   size: A4 landscape;
-  margin: 8mm;
+  margin: 6mm;
 }
 
 * {
@@ -1185,35 +1185,43 @@ body {
 }
 
 .print-wrapper {
-  padding: 8px;
+  padding: 4px;
 }
 
-/* 2 lignes de 5 cartes = 10 personnes */
+/* A4 paysage presque pleine page */
 .print-page {
-  width: 281mm;
-  min-height: 190mm;
-  margin: 0 auto 6mm auto;
+  width: 285mm;
+  min-height: 197mm;
+  margin: 0 auto 4mm auto;
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   grid-template-rows: repeat(2, 1fr);
   column-gap: 4mm;
-  row-gap: 1.5mm; /* espace réduit entre les 2 lignes */
+  row-gap: 3mm;
   align-items: start;
+  justify-items: stretch;
 }
 
+/* Carte plus grande */
 .print-card {
-  padding: 2mm 2mm 1mm 2mm;
+  padding: 1.5mm 1.5mm 1mm 1.5mm;
   text-align: center;
   font-size: 8pt;
-  line-height: 1.1;
+  line-height: 1.05;
   break-inside: avoid;
   page-break-inside: avoid;
+  width: 100%;
+  background: #fff;
+  border: none;
+  box-shadow: none;
+
 }
 
+/* Photo plus grosse */
 .print-photo {
   width: 100%;
-  height: 22mm; /* photo moins haute */
-  margin-bottom: 1mm;
+  height: 34mm;
+  margin-bottom: 1.2mm;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1226,12 +1234,13 @@ body {
   height: 100%;
   object-fit: contain;
   object-position: center center;
+  display: block;
 }
 
 .print-name {
   font-size: 8pt;
   font-weight: 700;
-  margin-bottom: 0.4mm;
+  margin-bottom: 0.5mm;
   line-height: 1.05;
 }
 
@@ -1260,6 +1269,7 @@ body {
     break-after: page;
   }
 }
+
 
       </style>
     </head>
