@@ -1185,25 +1185,25 @@ body {
 }
 
 .print-wrapper {
-  padding: 2mm;
+  padding: 0;
 }
 
 /* 2 lignes de 5 cartes qui occupent quasiment toute la page */
 .print-page {
   width: 291mm;             /* presque toute la largeur A4 paysage */
-  height: 201mm;            /* presque toute la hauteur utile */
+  height: 202mm;            /* presque toute la hauteur utile */
   margin: 0 auto 2mm auto;
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   grid-template-rows: repeat(2, 1fr);
-  column-gap: 3mm;
-  row-gap: 2mm;
+  column-gap: 2.5mm;
+  row-gap: 1.5mm;
   align-items: stretch;
   justify-items: stretch;
 }
 
 .print-card {
-  padding: 1mm 1mm 0.5mm 1mm;
+  padding: 0.8mm;
   text-align: center;
   font-size: 9pt;           /* texte plus gros */
   line-height: 1.1;
@@ -1216,8 +1216,8 @@ body {
 /* PHOTO VRAIMENT PLUS GRANDE */
 .print-photo {
   width: 100%;
-  height: 46mm;             /* beaucoup plus haut que avant */
-  margin-bottom: 1mm;
+  height: 52mm;             /* beaucoup plus haut que avant */
+  margin-bottom: 0.8mm;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1234,14 +1234,14 @@ body {
 }
 
 .print-name {
-  font-size: 9pt;
+  font-size: 10pt;
   font-weight: 700;
   margin-bottom: 0.4mm;
-  line-height: 1.05;
+  line-height: 1;
 }
 
 .print-line {
-  font-size: 7.5pt;
+  font-size: 8.2pt;
   color: #333;
   line-height: 1;
   margin: 0;
