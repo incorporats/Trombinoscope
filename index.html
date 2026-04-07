@@ -1144,7 +1144,7 @@ function openPrintableView() {
       <style>
         @page {
   size: A4 landscape;
-  margin: 6mm;
+  margin: 5mm;
 }
 
 * {
@@ -1185,43 +1185,39 @@ body {
 }
 
 .print-wrapper {
-  padding: 4px;
+  padding: 2mm;
 }
 
-/* A4 paysage presque pleine page */
+/* 2 lignes de 5 cartes qui occupent quasiment toute la page */
 .print-page {
-  width: 285mm;
-  min-height: 197mm;
-  margin: 0 auto 4mm auto;
+  width: 287mm;             /* presque toute la largeur A4 paysage */
+  height: 197mm;            /* presque toute la hauteur utile */
+  margin: 0 auto 3mm auto;
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   grid-template-rows: repeat(2, 1fr);
   column-gap: 4mm;
-  row-gap: 3mm;
-  align-items: start;
+  row-gap: 4mm;
+  align-items: stretch;
   justify-items: stretch;
 }
 
-/* Carte plus grande */
 .print-card {
-  padding: 1.5mm 1.5mm 1mm 1.5mm;
+  padding: 2mm 2mm 1.5mm 2mm;
   text-align: center;
-  font-size: 8pt;
-  line-height: 1.05;
+  font-size: 9pt;           /* texte plus gros */
+  line-height: 1.1;
   break-inside: avoid;
   page-break-inside: avoid;
-  width: 100%;
-  background: #fff;
-  border: none;
-  box-shadow: none;
-
+  display: flex;
+  flex-direction: column;
 }
 
-/* Photo plus grosse */
+/* PHOTO VRAIMENT PLUS GRANDE */
 .print-photo {
   width: 100%;
-  height: 36mm;
-  margin-bottom: 1.2mm;
+  height: 42mm;             /* beaucoup plus haut que avant */
+  margin-bottom: 1.5mm;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1232,20 +1228,20 @@ body {
 .print-photo img {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: contain;      /* on garde les visages entiers */
   object-position: center center;
   display: block;
 }
 
 .print-name {
-  font-size: 8pt;
+  font-size: 9pt;
   font-weight: 700;
-  margin-bottom: 0.5mm;
+  margin-bottom: 0.8mm;
   line-height: 1.05;
 }
 
 .print-line {
-  font-size: 7pt;
+  font-size: 8pt;
   color: #333;
   line-height: 1.05;
   margin: 0;
@@ -1269,6 +1265,7 @@ body {
     break-after: page;
   }
 }
+
 
 
       </style>
