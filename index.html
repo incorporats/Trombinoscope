@@ -644,6 +644,9 @@
                 </div>
                 <button type="submit" class="btn-primary">Ajouter</button>
             </form>
+                <button type="button" class="btn-primary" onclick="openPrintableView()">
+                   Ouvrir la version imprimable
+                </button>
         </div>
 
         <div class="search-bar">
@@ -1033,6 +1036,238 @@
                 }
             }
         });
+        // --- Fonctions utilitaires pour l'impression ---
+
+function escapeHtml(value = "") {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function getPeopleToPrint() {
+  const searchTerm = document.getElementById("searchInput").value.toLowerCase().trim();
+  if (!searchTerm) {
+    return window.people || [];
+  }
+  return window.filteredPeople || [];
+}
+
+function chunkArray(array, size) {
+  const chunks = [];
+  for (let i = 0; i < array.length; i += size) {
+    chunks.push(array.slice(i, i + size));
+  }
+  return chunks;
+}
+
+// Rendu d'une carte comme dans le PDF : photo en haut, nom en gras, lignes de texte
+function buildPrintableCard(person) {
+  const fullName = getFullName(person);
+  const role = person.role || "";
+  const specialty = person.specialty || "";
+  const email = person.email || "";
+  const phone = person.phone || "";
+
+  const photoHtml = person.photoUrl
+    ? `<div class="print-photo">
+         <img src="${person.photoUrl}" alt="${escapeHtml(fullName)}">
+       </div>`
+    : `<div class="print-photo">
+         <div style="
+           width:100%;
+           height:100%;
+           display:flex;
+           align-items:center;
+           justify-content:center;
+           border:1px solid #ccc;
+           font-weight:700;
+           font-size:12pt;">
+           ${escapeHtml(getInitials(person.firstName, person.lastName))}
+         </div>
+       </div>`;
+
+  const lines = [];
+
+  // Nom en gras (comme dans le PDF)
+  lines.push(`<div class="print-name">${escapeHtml(fullName)}</div>`);
+
+  // Lignes suivantes : fonction, spécialité, email, téléphone
+  if (role) {
+    lines.push(`<div class="print-line">${escapeHtml(role)}</div>`);
+  }
+  if (specialty) {
+    lines.push(`<div class="print-line">${escapeHtml(specialty)}</div>`);
+  }
+  if (email) {
+    lines.push(`<div class="print-line">${escapeHtml(email)}</div>`);
+  }
+  if (phone) {
+    lines.push(`<div class="print-line">${escapeHtml(phone)}</div>`);
+  }
+
+  return `
+    <article class="print-card">
+      ${photoHtml}
+      ${lines.join("")}
+    </article>
+  `;
+}
+
+function openPrintableView() {
+  const peopleToPrint = getPeopleToPrint();
+
+  if (!peopleToPrint.length) {
+    alert("Aucune carte à imprimer.");
+    return;
+  }
+
+  // 2 lignes de 5 cartes => 10 personnes par page
+  const pages = chunkArray(peopleToPrint, 10);
+
+  const htmlPages = pages.map((pagePeople, pageIndex) => `
+    <section class="print-page ${pageIndex < pages.length - 1 ? 'page-break' : ''}">
+      ${pagePeople.map(buildPrintableCard).join("")}
+    </section>
+  `).join("");
+
+  const printWindow = window.open("", "_blank", "width=1200,height=900");
+
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html lang="fr">
+    <head>
+      <meta charset="UTF-8">
+      <title>Trombinoscope imprimable</title>
+      <style>
+        @page {
+          size: A4 portrait;
+          margin: 10mm;
+        }
+
+        * {
+          box-sizing: border-box;
+        }
+
+        html, body {
+          margin: 0;
+          padding: 0;
+          font-family: Arial, sans-serif;
+          color: #111;
+          background: #fff;
+        }
+
+        body {
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+
+        .toolbar {
+          display: flex;
+          justify-content: center;
+          gap: 12px;
+          padding: 16px;
+          position: sticky;
+          top: 0;
+          background: #fff;
+          border-bottom: 1px solid #ddd;
+        }
+
+        .toolbar button {
+          padding: 10px 14px;
+          border: 1px solid #bbb;
+          background: #fff;
+          cursor: pointer;
+          border-radius: 8px;
+          font-size: 14px;
+        }
+
+        .print-wrapper {
+          padding: 10px;
+        }
+
+        /* Une page = 2 lignes de 5 cartes (10 personnes) */
+        .print-page {
+          width: 190mm;
+          min-height: 277mm;
+          margin: 0 auto 10mm auto;
+          display: grid;
+          grid-template-columns: repeat(5, 1fr);
+          grid-template-rows: repeat(2, 1fr); /* 2 lignes */
+          gap: 4mm;
+        }
+
+        .print-card {
+          padding: 3mm;
+          text-align: center;
+          font-size: 9pt;
+          line-height: 1.25;
+          break-inside: avoid;
+        }
+
+        .print-photo {
+          width: 100%;
+          height: 30mm;
+          margin-bottom: 2mm;
+          overflow: hidden;
+        }
+
+        .print-photo img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          object-position: center 20%;
+        }
+
+        .print-name {
+          font-size: 9.5pt;
+          font-weight: 700;
+          margin-bottom: 1mm;
+        }
+
+        .print-line {
+          font-size: 8.5pt;
+          color: #333;
+        }
+
+        @media print {
+          .toolbar {
+            display: none;
+          }
+
+          .print-wrapper {
+            padding: 0;
+          }
+
+          .print-page {
+            margin: 0 auto;
+          }
+
+          .page-break {
+            page-break-after: always;
+            break-after: page;
+          }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="toolbar">
+        <button onclick="window.print()">Imprimer / Enregistrer en PDF</button>
+        <button onclick="window.close()">Fermer</button>
+      </div>
+
+      <div class="print-wrapper">
+        ${htmlPages}
+      </div>
+    </body>
+    </html>
+  `);
+
+  printWindow.document.close();
+}
+
 
         renderTrombinoscope();
     </script>
