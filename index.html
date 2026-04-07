@@ -1144,7 +1144,7 @@ function openPrintableView() {
       <style>
         @page {
   size: A4 landscape;
-  margin: 5mm;
+  margin: 3mm;
 }
 
 * {
@@ -1190,20 +1190,20 @@ body {
 
 /* 2 lignes de 5 cartes qui occupent quasiment toute la page */
 .print-page {
-  width: 287mm;             /* presque toute la largeur A4 paysage */
-  height: 197mm;            /* presque toute la hauteur utile */
-  margin: 0 auto 3mm auto;
+  width: 291mm;             /* presque toute la largeur A4 paysage */
+  height: 201mm;            /* presque toute la hauteur utile */
+  margin: 0 auto 2mm auto;
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   grid-template-rows: repeat(2, 1fr);
-  column-gap: 4mm;
-  row-gap: 4mm;
+  column-gap: 3mm;
+  row-gap: 2mm;
   align-items: stretch;
   justify-items: stretch;
 }
 
 .print-card {
-  padding: 2mm 2mm 1.5mm 2mm;
+  padding: 1mm 1mm 0.5mm 1mm;
   text-align: center;
   font-size: 9pt;           /* texte plus gros */
   line-height: 1.1;
@@ -1216,8 +1216,8 @@ body {
 /* PHOTO VRAIMENT PLUS GRANDE */
 .print-photo {
   width: 100%;
-  height: 42mm;             /* beaucoup plus haut que avant */
-  margin-bottom: 1.5mm;
+  height: 46mm;             /* beaucoup plus haut que avant */
+  margin-bottom: 1mm;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1236,14 +1236,14 @@ body {
 .print-name {
   font-size: 9pt;
   font-weight: 700;
-  margin-bottom: 0.8mm;
+  margin-bottom: 0.4mm;
   line-height: 1.05;
 }
 
 .print-line {
-  font-size: 8pt;
+  font-size: 7.5pt;
   color: #333;
-  line-height: 1.05;
+  line-height: 1;
   margin: 0;
 }
 
