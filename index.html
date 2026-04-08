@@ -1144,7 +1144,7 @@ function openPrintableView() {
       <style>
         @page {
   size: A4 landscape;
-  margin: 3mm;
+  margin: 8mm 3mm 2mm 3mm;
 }
 
 * {
@@ -1185,14 +1185,14 @@ body {
 }
 
 .print-wrapper {
-  padding: 0;
+  padding: 2mm 0 0 0;
 }
 
 /* 2 lignes de 5 cartes qui occupent quasiment toute la page */
 .print-page {
   width: 291mm;             /* presque toute la largeur A4 paysage */
   height: 202mm;            /* presque toute la hauteur utile */
-  margin: 0 auto 2mm auto;
+  margin: 0 auto 1mm auto;
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   grid-template-rows: repeat(2, 1fr);
@@ -1234,16 +1234,16 @@ body {
 }
 
 .print-name {
-  font-size: 10pt;
+  font-size: 11pt;
   font-weight: 700;
-  margin-bottom: 0.4mm;
-  line-height: 1;
+  margin-bottom: 0.5mm;
+  line-height: 1.02;
 }
 
 .print-line {
-  font-size: 8.2pt;
-  color: #333;
-  line-height: 1;
+  font-size: 8.8pt;
+  color: #222;
+  line-height: 1.02;
   margin: 0;
 }
 
