@@ -1119,8 +1119,9 @@ function buildPrintableCard(person) {
 }
 
   if (email) {
-    lines.push(`<div class="print-line">${escapeHtml(email)}</div>`);
-  }
+  lines.push(`<div class="print-email">${escapeHtml(email)}</div>`);
+}
+
   if (phone) {
     lines.push(`<div class="print-line">${escapeHtml(phone)}</div>`);
   }
@@ -1271,6 +1272,18 @@ body {
   color: #222;
   font-weight: 700;
 }
+
+.print-email {
+  font-size: 14pt;
+  line-height: 1;
+  margin: 0 auto;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  text-align: center;
+}
+
 
 
 @media print {
