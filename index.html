@@ -1096,11 +1096,11 @@ function buildPrintableCard(person) {
 
   // Lignes suivantes : fonction, spécialité, email, téléphone
   if (role) {
-    lines.push(`<div class="print-line">${escapeHtml(role)}</div>`);
-  }
-  if (specialty) {
-    lines.push(`<div class="print-line">${escapeHtml(specialty)}</div>`);
-  }
+  lines.push(`<div class="print-role">${escapeHtml(role)}</div>`);
+} else if (specialty) {
+  lines.push(`<div class="print-line">${escapeHtml(specialty)}</div>`);
+}
+
   if (email) {
     lines.push(`<div class="print-line">${escapeHtml(email)}</div>`);
   }
@@ -1246,6 +1246,15 @@ body {
   line-height: 1.02;
   margin: 0;
 }
+
+.print-role {
+  font-size: 8.4pt;
+  line-height: 1.02;
+  margin: 0;
+  color: #222;
+  font-weight: 700;
+}
+
 
 @media print {
   .toolbar {
