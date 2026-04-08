@@ -562,14 +562,31 @@
             onValue(peopleRef, (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
-                    window.people = Object.keys(data).map(key => ({
-                        firebaseId: key,
-                        ...data[key]
-                    })).sort((a, b) => {
-                        const nameA = (a.lastName || '').toLowerCase();
-                        const nameB = (b.lastName || '').toLowerCase();
-                        return nameA.localeCompare(nameB);
-                    });
+                    window.people = Object.keys(data)
+  .map(key => ({ firebaseId: key, ...data[key] }))
+  .sort((a, b) => {
+    const isDupasquierA =
+      (a.lastName || "").trim().toLowerCase() === "dupasquier" &&
+      (a.firstName || "").trim().toLowerCase() === "jean-pierre";
+
+    const isDupasquierB =
+      (b.lastName || "").trim().toLowerCase() === "dupasquier" &&
+      (b.firstName || "").trim().toLowerCase() === "jean-pierre";
+
+    if (isDupasquierA && !isDupasquierB) return -1;
+    if (!isDupasquierA && isDupasquierB) return 1;
+
+    const lastNameCompare = (a.lastName || "")
+      .toLowerCase()
+      .localeCompare((b.lastName || "").toLowerCase(), "fr");
+
+    if (lastNameCompare !== 0) return lastNameCompare;
+
+    return (a.firstName || "")
+      .toLowerCase()
+      .localeCompare((b.firstName || "").toLowerCase(), "fr");
+  });
+
                 } else {
                     window.people = [];
                 }
