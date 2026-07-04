@@ -1080,7 +1080,7 @@ function chunkArray(array, size) {
   return chunks;
 }
 
-// Rendu d'une carte comme dans le PDF : photo en haut, nom en gras, lignes de texte
+// Rendu d'une carte comme dans le PPTX : grande photo en haut, nom en gras, lignes de texte compactes
 function buildPrintableCard(person) {
   const fullName = getFullName(person);
   const role = person.role || "";
@@ -1121,7 +1121,9 @@ function buildPrintableCard(person) {
   return `
     <article class="print-card">
       ${photoHtml}
-      ${lines.join("")}
+      <div class="print-text">
+        ${lines.join("")}
+      </div>
     </article>
   `;
 }
@@ -1135,7 +1137,7 @@ function openPrintableView() {
     return;
   }
 
-  const pages = chunkArray(peopleToPrint, 10); // 2 lignes de 5
+  const pages = chunkArray(peopleToPrint, 10); // 2 lignes de 5, comme le document de référence
 
   const htmlPages = pages.map((pagePeople) => `
   <section class="print-page">
@@ -1153,18 +1155,22 @@ function openPrintableView() {
       <meta charset="UTF-8">
       <title>Trombinoscope imprimable</title>
       <style>
+        /* Mise en page calquée sur le trombinoscope PPTX :
+           A4 paysage, marges minimales, 5 colonnes x 2 lignes,
+           photos maximisées occupant tout l'espace disponible */
+
         @page {
           size: A4 landscape;
-          margin: 8mm;
+          margin: 4mm;
         }
 
         * {
           box-sizing: border-box;
+          margin: 0;
+          padding: 0;
         }
 
         html, body {
-          margin: 0;
-          padding: 0;
           font-family: Arial, sans-serif;
           color: #111;
           background: #fff;
@@ -1179,7 +1185,7 @@ function openPrintableView() {
           display: flex;
           justify-content: center;
           gap: 12px;
-          padding: 16px;
+          padding: 12px;
           position: sticky;
           top: 0;
           background: #fff;
@@ -1197,107 +1203,136 @@ function openPrintableView() {
         }
 
         .print-wrapper {
-  padding: 8px;
-}
+          padding: 0;
+        }
 
-.print-page {
-  width: 100%;
-  margin: 0 auto;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  grid-auto-rows: auto;
-  column-gap: 8px;
-  row-gap: 4px;
-  align-content: start;
-  align-items: start;
-  break-inside: avoid;
-  page-break-inside: avoid;
-}
+        /* Chaque page = la surface utile A4 paysage (297-8 x 210-8 mm),
+           découpée en 5 colonnes et 2 lignes égales */
+        .print-page {
+          width: 289mm;
+          height: 200mm;
+          margin: 0 auto;
+          display: grid;
+          grid-template-columns: repeat(5, 1fr);
+          grid-template-rows: repeat(2, 1fr);
+          column-gap: 3mm;
+          row-gap: 2mm;
+          break-inside: avoid;
+          page-break-inside: avoid;
+        }
 
-.print-card {
-  padding: 2px 4px 2px 4px;
-  text-align: center;
-  break-inside: avoid;
-  page-break-inside: avoid;
-  overflow: hidden;
-}
+        .print-card {
+          display: flex;
+          flex-direction: column;
+          text-align: center;
+          break-inside: avoid;
+          page-break-inside: avoid;
+          overflow: hidden;
+          min-height: 0;
+          min-width: 0;
+        }
 
-.print-photo {
-  width: 100%;
-  height: 160px;
-  margin-bottom: 2px;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #fff;
-}
+        /* La photo prend toute la place restante au-dessus du texte */
+        .print-photo {
+          flex: 1 1 auto;
+          min-height: 0;
+          width: 100%;
+          overflow: hidden;
+          margin-bottom: 1mm;
+          background: #fff;
+        }
 
-.print-photo img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: center center;
-  display: block;
-}
+        /* Image droite, plein cadre, centrée, cadrée sur le visage */
+        .print-photo img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          object-position: center 22%;
+          display: block;
+        }
 
-.print-name {
-  font-size: 16px;
-  font-weight: 700;
-  line-height: 1.05;
-  margin-bottom: 1px;
-}
+        .print-photo-fallback {
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: #ececec;
+          font-size: 46px;
+          font-weight: 700;
+          color: #777;
+        }
 
-.print-role {
-  font-size: 14px;
-  line-height: 1.05;
-  font-weight: 700;
-  margin: 0;
-}
+        /* Bloc texte compact sous la photo, hauteur naturelle */
+        .print-text {
+          flex: 0 0 auto;
+        }
 
-.print-line {
-  font-size: 14px;
-  line-height: 1.05;
-  margin: 0;
-}
+        .print-name {
+          font-size: 15px;
+          font-weight: 700;
+          line-height: 1.1;
+        }
 
-.print-email {
-  font-size: 14px;
-  line-height: 1.05;
-  margin: 0 auto;
-  max-width: 100%;
-  white-space: normal;
-  overflow-wrap: anywhere;
-  word-break: break-word;
-  text-align: center;
-}
+        .print-role {
+          font-size: 13px;
+          line-height: 1.1;
+          font-weight: 700;
+          margin: 0;
+        }
 
-@media print {
-  html, body {
-    width: 100%;
-    margin: 0;
-    padding: 0;
-  }
+        .print-line {
+          font-size: 13px;
+          line-height: 1.1;
+          margin: 0;
+        }
 
-  .toolbar {
-    display: none;
-  }
+        .print-email {
+          font-size: 12.5px;
+          line-height: 1.1;
+          margin: 0 auto;
+          max-width: 100%;
+          white-space: normal;
+          overflow-wrap: anywhere;
+          word-break: break-word;
+          text-align: center;
+        }
 
-  .print-wrapper {
-    padding: 0;
-  }
+        /* Aperçu écran : séparer visuellement les pages */
+        @media screen {
+          .print-page {
+            border: 1px dashed #ccc;
+            margin-bottom: 12px;
+          }
+        }
 
-  .print-page {
-    width: 100%;
-    margin: 0;
-  }
+        @media print {
+          html, body {
+            width: 100%;
+            margin: 0;
+            padding: 0;
+          }
 
-  .print-page + .print-page {
-    break-before: page;
-    page-break-before: always;
-  }
-}
+          .toolbar {
+            display: none;
+          }
+
+          .print-wrapper {
+            padding: 0;
+          }
+
+          .print-page {
+            width: 100%;
+            height: 200mm;
+            margin: 0;
+            border: none;
+          }
+
+          .print-page + .print-page {
+            break-before: page;
+            page-break-before: always;
+          }
+        }
 
       </style>
     </head>
