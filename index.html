@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trombinoscope</title>
+    <style>
+        :root {
+            --color-background: #fcfcf9;
+            --color-surface: #fffffe;
+            --color-text: #13343b;
+            --color-text-secondary: #626c71;
+            --color-primary: #21808d;
+            --color-primary-hover: #1d7480;
+            --color-border: rgba(94, 82, 64, 0.2);
+            --color-card-border: rgba(94, 82, 64, 0.12);
+            --color-error: #c0152f;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --color-background: #1f2121;
+                --color-surface: #262828;
+                --color-text: #f5f5f5;
+                --color-text-secondary: rgba(167, 169, 169, 0.7);
+                --color-primary: #32b8c6;
+                --color-primary-hover: #2da6b2;
+                --color-border: rgba(119, 124, 124, 0.3);
+                --color-card-border: rgba(119, 124, 124, 0.2);
+                --color-error: #ff5459;
+            }
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: var(--color-background);
+            color: var(--color-text);
+            padding: 2rem;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .controls {
+            background-color: var(--color-surface);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--color-card-border);
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            font-size: 0.875rem;
+            color: var(--color-text);
+        }
+
+        input {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            background-color: var(--color-surface);
+            color: var(--color-text);
+            transition: border-color 150ms ease;
+        }
+
+        input:focus {
+            outline: 2px solid var(--color-primary);
+            border-color: var(--color-primary);
+        }
+
+        button {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 250ms cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .btn-primary {
+            background-color: var(--color-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--color-primary-hover);
+        }
+
+        .trombinoscope {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+            transition: all 300ms cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .person-card {
+            background-color: var(--color-surface);
+            border: 1px solid var(--color-card-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+            transition: all 300ms cubic-bezier(0.16, 1, 0.3, 1);
+            animation: fadeIn 300ms ease;
+            cursor: pointer;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .person-card:hover {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.04), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+            transform: translateY(-2px);
+        }
+
+        .avatar {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: white;
+            font-weight: 600;
+            overflow: hidden;
+        }
+
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center 20%;
+        }
+
+        .avatar-initials {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        .person-name {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: var(--color-text);
+        }
+
+        .person-role {
+            font-size: 0.875rem;
+            color: var(--color-text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--color-text-secondary);
+        }
+
+        .empty-state p {
+            font-size: 1.125rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state small {
+            font-size: 0.875rem;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+
+        .pagination-btn {
+            padding: 0.5rem 1rem;
+            background-color: var(--color-surface);
+            color: var(--color-text);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 250ms ease;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .pagination-btn:hover:not(:disabled) {
+            background-color: var(--color-primary);
+            color: white;
+        }
+
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination-btn.active {
+            background-color: var(--color-primary);
+            color: white;
+        }
+
+        .pagination-info {
+            font-size: 0.875rem;
+            color: var(--color-text-secondary);
+            padding: 0.5rem 1rem;
+        }
+
+        .pagination-numbers {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .search-bar {
+            background-color: var(--color-surface);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--color-card-border);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .search-bar input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            background-color: var(--color-background);
+            color: var(--color-text);
+        }
+
+        .search-bar input:focus {
+            outline: 2px solid var(--color-primary);
+            border-color: var(--color-primary);
+        }
+
+        .search-icon {
+            font-size: 1.25rem;
+            color: var(--color-text-secondary);
+        }
+
+        .per-page-selector {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
+
+        .per-page-selector select {
+            padding: 0.5rem;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            background-color: var(--color-surface);
+            color: var(--color-text);
+            cursor: pointer;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: var(--color-surface);
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            animation: modalSlideIn 300ms ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--color-text-secondary);
+            padding: 0.5rem;
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            color: var(--color-text);
+        }
+
+        .modal-avatar {
+            width: 250px;
+            height: 250px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
+            margin: 0 auto 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 5rem;
+            color: white;
+            font-weight: 600;
+            overflow: hidden;
+        }
+
+        .modal-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center 20%;
+        }
+
+        .btn-edit {
+            background-color: var(--color-primary);
+            color: white;
+            padding: 0.375rem 0.75rem;
+            font-size: 0.75rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 250ms ease;
+            margin-top: 0.5rem;
+        }
+
+        .btn-edit:hover {
+            background-color: var(--color-primary-hover);
+        }
+
+        .btn-delete {
+            background-color: var(--color-error);
+            color: white;
+            padding: 0.375rem 0.75rem;
+            font-size: 0.75rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 250ms ease;
+            margin-top: 0.5rem;
+        }
+
+        .btn-delete:hover {
+            opacity: 0.9;
+        }
+
+        .modal-name {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            text-align: center;
+            color: var(--color-text);
+        }
+
+        .modal-info {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .modal-info-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1rem;
+        }
+
+        .modal-info-label {
+            font-weight: 600;
+            color: var(--color-text);
+            min-width: 100px;
+        }
+
+        .modal-info-value {
+            color: var(--color-text-secondary);
+        }
+
+        .modal-info-value a {
+            color: var(--color-primary);
+            text-decoration: none;
+        }
+
+        .modal-info-value a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .form-group {
+                flex-direction: column;
+            }
+
+            .input-wrapper {
+                width: 100%;
+            }
+
+            .modal-content {
+                padding: 1.5rem;
+            }
+
+            .modal-avatar {
+                width: 150px;
+                height: 150px;
+                font-size: 4rem;
+            }
+
+            .modal-name {
+                font-size: 1.25rem;
+            }
+
+            .modal-info-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.25rem;
+            }
+
+            .modal-info-label {
+                min-width: auto;
+            }
+
+            .trombinoscope {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                gap: 1rem;
+            }
+
+            .person-card {
+                padding: 1rem;
+            }
+
+            .avatar {
+                width: 100px;
+                height: 100px;
+                font-size: 2.5rem;
+            }
+
+            .person-name {
+                font-size: 1rem;
+            }
+
+            .person-role {
+                font-size: 0.8rem;
+            }
+
+            .pagination {
+                gap: 0.5rem;
+            }
+
+            .pagination-btn {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js';
+        import { getDatabase, ref, onValue } from 'https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC9TtsRwS4acKC4OcHnNKMtD04qCVSqDJ8",
+            authDomain: "trombinoscope-43e94.firebaseapp.com",
+            databaseURL: "https://trombinoscope-43e94-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "trombinoscope-43e94",
+            storageBucket: "trombinoscope-43e94.firebasestorage.app",
+            messagingSenderId: "1085815401900",
+            appId: "1:1085815401900:web:5fd870a294fcf4d10f5e09"
+        };
+
+        let db;
+        let peopleRef;
+        
+        window.addPersonToFirebase = null;
+        window.deletePersonFromFirebase = null;
+
+        try {
+            const app = initializeApp(firebaseConfig);
+            db = getDatabase(app);
+            peopleRef = ref(db, 'people');
+            
+            onValue(peopleRef, (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    window.people = Object.keys(data)
+  .map(key => ({ firebaseId: key, ...data[key] }))
+  .sort((a, b) => {
+    const isDupasquierA =
+      (a.lastName || "").trim().toLowerCase() === "dupasquier" &&
+      (a.firstName || "").trim().toLowerCase() === "jean-pierre";
+
+    const isDupasquierB =
+      (b.lastName || "").trim().toLowerCase() === "dupasquier" &&
+      (b.firstName || "").trim().toLowerCase() === "jean-pierre";
+
+    if (isDupasquierA && !isDupasquierB) return -1;
+    if (!isDupasquierA && isDupasquierB) return 1;
+
+    const lastNameCompare = (a.lastName || "")
+      .toLowerCase()
+      .localeCompare((b.lastName || "").toLowerCase(), "fr");
+
+    if (lastNameCompare !== 0) return lastNameCompare;
+
+    return (a.firstName || "")
+      .toLowerCase()
+      .localeCompare((b.firstName || "").toLowerCase(), "fr");
+  });
+
+                } else {
+                    window.people = [];
+                }
+                filteredPeople = window.people;
+                renderTrombinoscope();
+            });
+            
+            window.firebaseReady = true;
+
+            const { push, remove } = await import('https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js');
+            
+            window.addPersonToFirebase = async (person) => {
+                try {
+                    await push(peopleRef, person);
+                } catch (error) {
+                    console.error('Erreur ajout:', error);
+                }
+            };
+
+            window.deletePersonFromFirebase = async (firebaseId) => {
+                try {
+                    const { ref: dbRef } = await import('https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js');
+                    await remove(dbRef(db, `people/${firebaseId}`));
+                } catch (error) {
+                    console.error('Erreur suppression:', error);
+                }
+            };
+        } catch (error) {
+            console.error('Firebase non configuré:', error);
+            window.firebaseReady = false;
+        }
+    </script>
+
+    <div class="container">
+        <h1>🎭 Gestion du Trombinoscope</h1>
+
+        <div class="controls">
+            <form id="addPersonForm" class="form-group">
+                <div class="input-wrapper">
+                    <label for="lastName">Nom</label>
+                    <input type="text" id="lastName" placeholder="Dupont">
+                </div>
+                <div class="input-wrapper">
+                    <label for="firstName">Prénom</label>
+                    <input type="text" id="firstName" placeholder="Jean">
+                </div>
+                <div class="input-wrapper">
+                    <label for="isDoctor">
+                        <input type="checkbox" id="isDoctor" style="width: auto; margin-right: 0.5rem;">
+                        Docteur
+                    </label>
+                </div>
+                <div class="input-wrapper">
+                    <label for="role">Fonction</label>
+                    <input type="text" id="role" placeholder="Médecin">
+                </div>
+                <div class="input-wrapper">
+                    <label for="specialty">Spécialité</label>
+                    <input type="text" id="specialty" placeholder="Cardiologie">
+                </div>
+                <div class="input-wrapper">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" placeholder="jean.dupont@exemple.fr">
+                </div>
+                <div class="input-wrapper">
+                    <label for="phone">Téléphone</label>
+                    <input type="tel" id="phone" placeholder="01 23 45 67 89">
+                </div>
+                <div class="input-wrapper">
+                    <label for="photoFile">Photo (fichier)</label>
+                    <input type="file" id="photoFile" accept="image/*">
+                </div>
+                <button type="submit" class="btn-primary">Ajouter</button>
+            </form>
+                <button type="button" class="btn-primary" onclick="openPrintableView()">
+                   Ouvrir la version imprimable
+                </button>
+                <div class="per-page-selector" style="margin-top: 0.75rem; margin-bottom: 0;">
+                    <label for="printQuality">Poids du PDF :</label>
+                    <select id="printQuality">
+                        <option value="light" selected>Léger</option>
+                        <option value="standard">Standard</option>
+                        <option value="original">Photos d'origine</option>
+                    </select>
+                </div>
+        </div>
+
+        <div class="search-bar">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchInput" placeholder="Rechercher par nom, prénom, fonction ou spécialité..." oninput="searchPeople()">
+        </div>
+
+        <div class="per-page-selector">
+            <label for="perPage">Personnes par page:</label>
+            <select id="perPage" onchange="changePerPage()">
+                <option value="5">5</option>
+                <option value="10" selected>10</option>
+                <option value="15">15</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+            </select>
+        </div>
+
+        <div id="trombinoscope" class="trombinoscope"></div>
+        
+        <div class="pagination" id="pagination" style="display: none;">
+            <button class="pagination-btn" onclick="goToPage(1)" id="firstPageBtn">⏮️ Première</button>
+            <button class="pagination-btn" onclick="previousPage()" id="prevBtn">◀️ Précédent</button>
+            <div class="pagination-numbers" id="pageNumbers"></div>
+            <span class="pagination-info" id="pageInfo"></span>
+            <button class="pagination-btn" onclick="nextPage()" id="nextBtn">Suivant ▶️</button>
+            <button class="pagination-btn" onclick="goToPage('last')" id="lastPageBtn">Dernière ⏭️</button>
+        </div>
+        
+        <div id="emptyState" class="empty-state">
+            <p>Aucune personne dans le trombinoscope</p>
+            <small>Le trombinoscope se mettra à jour automatiquement</small>
+        </div>
+    </div>
+
+    <div id="modal" class="modal" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <script>
+        window.people = [];
+        let filteredPeople = [];
+        let currentPage = 1;
+        let itemsPerPage = 10;
+
+        function getInitials(firstName, lastName) {
+            const first = firstName ? firstName.charAt(0) : '';
+            const last = lastName ? lastName.charAt(0) : '';
+            return (first + last).toUpperCase();
+        }
+
+        function getFullName(person) {
+            const title = person.isDoctor ? 'Dr ' : '';
+            const lastName = person.lastName || '';
+            const firstName = person.firstName || '';
+            const fullName = `${lastName} ${firstName}`.trim();
+            return fullName ? `${title}${fullName}` : '';
+        }
+
+        function searchPeople() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            
+            if (searchTerm === '') {
+                filteredPeople = people;
+            } else {
+                filteredPeople = people.filter(person => {
+                    const firstName = (person.firstName || '').toLowerCase();
+                    const lastName = (person.lastName || '').toLowerCase();
+                    const role = (person.role || '').toLowerCase();
+                    const specialty = (person.specialty || '').toLowerCase();
+                    
+                    return firstName.includes(searchTerm) || 
+                           lastName.includes(searchTerm) || 
+                           role.includes(searchTerm) || 
+                           specialty.includes(searchTerm);
+                });
+            }
+            
+            currentPage = 1;
+            renderTrombinoscope();
+        }
+
+        function renderTrombinoscope() {
+            const container = document.getElementById('trombinoscope');
+            const emptyState = document.getElementById('emptyState');
+            const pagination = document.getElementById('pagination');
+
+            const displayPeople = filteredPeople.length > 0 || document.getElementById('searchInput').value.trim() !== '' ? filteredPeople : people;
+
+            if (displayPeople.length === 0) {
+                emptyState.style.display = 'block';
+                container.style.display = 'none';
+                pagination.style.display = 'none';
+                
+                if (document.getElementById('searchInput').value.trim() !== '') {
+                    emptyState.querySelector('p').textContent = 'Aucun résultat trouvé';
+                    emptyState.querySelector('small').textContent = 'Essayez une autre recherche';
+                } else {
+                    emptyState.querySelector('p').textContent = 'Aucune personne dans le trombinoscope';
+                    emptyState.querySelector('small').textContent = 'Le trombinoscope se mettra à jour automatiquement';
+                }
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            container.style.display = 'grid';
+
+            const totalPages = Math.ceil(displayPeople.length / itemsPerPage);
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const currentPeople = displayPeople.slice(startIndex, endIndex);
+
+            if (totalPages > 1) {
+                pagination.style.display = 'flex';
+                updatePagination(totalPages);
+            } else {
+                pagination.style.display = 'none';
+            }
+
+            container.innerHTML = '';
+
+            currentPeople.forEach(person => {
+                const avatarContent = person.photoUrl 
+                    ? `<img src="${person.photoUrl}" alt="${getFullName(person)}" onerror="this.style.display='none'; this.parentElement.innerHTML='<div class=\\'avatar-initials\\'>${getInitials(person.firstName, person.lastName)}</div>';">`
+                    : `<div class="avatar-initials">${getInitials(person.firstName, person.lastName)}</div>`;
+                
+                const emailLink = person.email ? `<a href="mailto:${person.email}" style="color: var(--color-primary); text-decoration: none;">${person.email}</a>` : '';
+                
+                const card = document.createElement('div');
+                card.className = 'person-card';
+                card.innerHTML = `
+                    <div class="avatar">${avatarContent}</div>
+                    <div class="person-name">${getFullName(person)}</div>
+                    <div class="person-role">${person.role || ''}</div>
+                    <div class="person-role">${person.specialty || ''}</div>
+                    <button class="btn-edit" onclick="event.stopPropagation(); editPerson('${person.firebaseId}')">✏️ Modifier</button>
+                    <button class="btn-delete" onclick="event.stopPropagation(); deletePerson('${person.firebaseId}')">Supprimer</button>
+                `;
+                card.onclick = () => openModal(person);
+                container.appendChild(card);
+            });
+        }
+
+        function updatePagination(totalPages) {
+            const pageInfo = document.getElementById('pageInfo');
+            const pageNumbers = document.getElementById('pageNumbers');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const firstPageBtn = document.getElementById('firstPageBtn');
+            const lastPageBtn = document.getElementById('lastPageBtn');
+
+            pageInfo.textContent = `Page ${currentPage} / ${totalPages}`;
+
+            prevBtn.disabled = currentPage === 1;
+            firstPageBtn.disabled = currentPage === 1;
+            nextBtn.disabled = currentPage === totalPages;
+            lastPageBtn.disabled = currentPage === totalPages;
+
+            pageNumbers.innerHTML = '';
+            
+            let startPage = Math.max(1, currentPage - 2);
+            let endPage = Math.min(totalPages, currentPage + 2);
+
+            if (currentPage <= 3) {
+                endPage = Math.min(5, totalPages);
+            }
+            if (currentPage > totalPages - 3) {
+                startPage = Math.max(1, totalPages - 4);
+            }
+
+            if (startPage > 1) {
+                const btn = document.createElement('button');
+                btn.className = 'pagination-btn';
+                btn.textContent = '1';
+                btn.onclick = () => goToPage(1);
+                pageNumbers.appendChild(btn);
+
+                if (startPage > 2) {
+                    const dots = document.createElement('span');
+                    dots.textContent = '...';
+                    dots.style.padding = '0.5rem';
+                    pageNumbers.appendChild(dots);
+                }
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                const btn = document.createElement('button');
+                btn.className = 'pagination-btn';
+                if (i === currentPage) {
+                    btn.classList.add('active');
+                }
+                btn.textContent = i;
+                btn.onclick = () => goToPage(i);
+                pageNumbers.appendChild(btn);
+            }
+
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    const dots = document.createElement('span');
+                    dots.textContent = '...';
+                    dots.style.padding = '0.5rem';
+                    pageNumbers.appendChild(dots);
+                }
+
+                const btn = document.createElement('button');
+                btn.className = 'pagination-btn';
+                btn.textContent = totalPages;
+                btn.onclick = () => goToPage(totalPages);
+                pageNumbers.appendChild(btn);
+            }
+        }
+
+        function goToPage(page) {
+            const displayPeople = filteredPeople.length > 0 || document.getElementById('searchInput').value.trim() !== '' ? filteredPeople : people;
+            const totalPages = Math.ceil(displayPeople.length / itemsPerPage);
+            
+            if (page === 'last') {
+                currentPage = totalPages;
+            } else {
+                currentPage = Math.max(1, Math.min(page, totalPages));
+            }
+            
+            renderTrombinoscope();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function nextPage() {
+            const displayPeople = filteredPeople.length > 0 || document.getElementById('searchInput').value.trim() !== '' ? filteredPeople : people;
+            const totalPages = Math.ceil(displayPeople.length / itemsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderTrombinoscope();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function previousPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                renderTrombinoscope();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function changePerPage() {
+            itemsPerPage = parseInt(document.getElementById('perPage').value);
+            currentPage = 1;
+            renderTrombinoscope();
+        }
+
+        function openModal(person) {
+            const modal = document.getElementById('modal');
+            const modalBody = document.getElementById('modalBody');
+            
+            const avatarContent = person.photoUrl 
+                ? `<img src="${person.photoUrl}" alt="${getFullName(person)}">`
+                : `<div class="avatar-initials">${getInitials(person.firstName, person.lastName)}</div>`;
+            
+            modalBody.innerHTML = `
+                <div class="modal-avatar">${avatarContent}</div>
+                <div class="modal-name">${getFullName(person)}</div>
+                <div class="modal-info">
+                    ${person.role ? `
+                        <div class="modal-info-item">
+                            <span class="modal-info-label">Fonction:</span>
+                            <span class="modal-info-value">${person.role}</span>
+                        </div>
+                    ` : ''}
+                    ${person.specialty ? `
+                        <div class="modal-info-item">
+                            <span class="modal-info-label">Spécialité:</span>
+                            <span class="modal-info-value">${person.specialty}</span>
+                        </div>
+                    ` : ''}
+                    ${person.email ? `
+                        <div class="modal-info-item">
+                            <span class="modal-info-label">Email:</span>
+                            <span class="modal-info-value"><a href="mailto:${person.email}">${person.email}</a></span>
+                        </div>
+                    ` : ''}
+                    ${person.phone ? `
+                        <div class="modal-info-item">
+                            <span class="modal-info-label">Téléphone:</span>
+                            <span class="modal-info-value"><a href="tel:${person.phone}">${person.phone}</a></span>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+            
+            modal.classList.add('active');
+        }
+
+        function closeModal(event) {
+            if (!event || event.target === event.currentTarget) {
+                document.getElementById('modal').classList.remove('active');
+            }
+        }
+
+        function editPerson(firebaseId) {
+            const person = people.find(p => p.firebaseId === firebaseId);
+            if (!person) return;
+
+            document.getElementById('firstName').value = person.firstName || '';
+            document.getElementById('lastName').value = person.lastName || '';
+            document.getElementById('isDoctor').checked = person.isDoctor || false;
+            document.getElementById('role').value = person.role || '';
+            document.getElementById('specialty').value = person.specialty || '';
+            document.getElementById('email').value = person.email || '';
+            document.getElementById('phone').value = person.phone || '';
+
+            const form = document.getElementById('addPersonForm');
+            form.dataset.editingId = firebaseId;
+            
+            const submitBtn = form.querySelector('button[type="submit"]');
+            submitBtn.textContent = 'Mettre à jour';
+            submitBtn.style.backgroundColor = '#e67e22';
+
+            document.getElementById('lastName').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function deletePerson(firebaseId) {
+            // Garde-fou : sans identifiant, remove() viserait "people/" et effacerait tout
+            if (!firebaseId || !window.firebaseReady) return;
+
+            const person = people.find(p => p.firebaseId === firebaseId);
+            if (!person) return;
+
+            // Confirmation avec le nom : si la carte suivante a glissé sous le doigt,
+            // c'est son nom qui s'affiche et on peut annuler
+            const name = getFullName(person) || 'cette personne';
+            if (!confirm(`Supprimer ${name} du trombinoscope ?`)) return;
+
+            // Si cette fiche était en cours de modification, on vide le formulaire
+            // (sinon "Mettre à jour" la recréerait)
+            const form = document.getElementById('addPersonForm');
+            if (form.dataset.editingId === firebaseId) {
+                form.reset();
+                delete form.dataset.editingId;
+                const submitBtn = form.querySelector('button[type="submit"]');
+                submitBtn.textContent = 'Ajouter';
+                submitBtn.style.backgroundColor = '';
+            }
+
+            window.deletePersonFromFirebase(firebaseId);
+        }
+
+        document.getElementById('addPersonForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const firstName = document.getElementById('firstName').value.trim();
+            const lastName = document.getElementById('lastName').value.trim();
+            const isDoctor = document.getElementById('isDoctor').checked;
+            const role = document.getElementById('role').value.trim();
+            const specialty = document.getElementById('specialty').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const photoFile = document.getElementById('photoFile').files[0];
+            const form = e.target;
+            const editingId = form.dataset.editingId;
+
+            if (firstName || lastName || role || specialty || email || phone) {
+                const personData = { firstName, lastName, isDoctor, role, specialty, email, phone };
+
+                const processData = (photoUrl = '') => {
+                    personData.photoUrl = photoUrl;
+                    
+                    if (window.firebaseReady) {
+                        if (editingId) {
+                            import('https://www.gstatic.com/firebasejs/12.9.0/firebase-database.js').then(({ ref, set, getDatabase }) => {
+                                const db = getDatabase();
+                                set(ref(db, `people/${editingId}`), personData);
+                            });
+                        } else {
+                            window.addPersonToFirebase(personData);
+                        }
+                    }
+
+                    document.getElementById('firstName').value = '';
+                    document.getElementById('lastName').value = '';
+                    document.getElementById('isDoctor').checked = false;
+                    document.getElementById('role').value = '';
+                    document.getElementById('specialty').value = '';
+                    document.getElementById('email').value = '';
+                    document.getElementById('phone').value = '';
+                    document.getElementById('photoFile').value = '';
+                    delete form.dataset.editingId;
+                    
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    submitBtn.textContent = 'Ajouter';
+                    submitBtn.style.backgroundColor = '';
+                    
+                    document.getElementById('lastName').focus();
+                };
+
+                if (photoFile) {
+                    const reader = new FileReader();
+                    reader.onload = async function(e) {
+                        let url = e.target.result;
+                        try {
+                            url = await compressPhoto(url, UPLOAD_PHOTO_BOX, UPLOAD_JPEG_QUALITY);
+                        } catch (err) {
+                            console.warn('Compression impossible, photo originale conservée', err);
+                        }
+                        processData(url);
+                    };
+                    reader.readAsDataURL(photoFile);
+                } else {
+                    const existingPerson = people.find(p => p.firebaseId === editingId);
+                    processData(existingPerson?.photoUrl || '');
+                }
+            }
+        });
+        // --- Fonctions utilitaires pour l'impression ---
+
+// --- Compression des photos (canvas -> JPEG) ---
+// Réglages "Poids du PDF" — cadre photo imprimé ≈ 55 x 66 mm
+const PRINT_QUALITY_PRESETS = {
+  light:    { box: { w: 300, h: 360 }, quality: 0.7 },  // ≈ 140 dpi : net sur papier, très léger
+  standard: { box: { w: 420, h: 500 }, quality: 0.78 }, // ≈ 190 dpi
+  original: null                                         // photos telles qu'enregistrées
+};
+// Photos ajoutées : petit côté ramené à 900 px (garde de la marge pour l'impression)
+const UPLOAD_PHOTO_BOX = { w: 900, h: 900 };
+const UPLOAD_JPEG_QUALITY = 0.85;
+
+const printPhotoCache = new Map();
+
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
+// Réduit l'image pour qu'elle couvre au moins box.w x box.h (jamais agrandie).
+// Pas de recadrage : le object-fit: cover de l'impression reste inchangé.
+async function compressPhoto(src, box, quality) {
+  const img = await loadImage(src);
+  const w = img.naturalWidth;
+  const h = img.naturalHeight;
+  const scale = Math.min(1, Math.max(box.w / w, box.h / h));
+  const tw = Math.max(1, Math.round(w * scale));
+  const th = Math.max(1, Math.round(h * scale));
+
+  // Réduction par paliers de 50 % : plus net qu'un seul gros redimensionnement (Safari)
+  let source = img;
+  let sw = w;
+  let sh = h;
+  while (sw / 2 > tw) {
+    const step = document.createElement('canvas');
+    step.width = Math.round(sw / 2);
+    step.height = Math.round(sh / 2);
+    step.getContext('2d').drawImage(source, 0, 0, step.width, step.height);
+    source = step;
+    sw = step.width;
+    sh = step.height;
+  }
+
+  const canvas = document.createElement('canvas');
+  canvas.width = tw;
+  canvas.height = th;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#fff'; // fond blanc pour les PNG transparents
+  ctx.fillRect(0, 0, tw, th);
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(source, 0, 0, tw, th);
+
+  const out = canvas.toDataURL('image/jpeg', quality);
+  // Si l'original était déjà plus léger, on le garde
+  return out.length < src.length ? out : src;
+}
+
+// Prépare une version allégée de chaque photo, une par une (évite de saturer la mémoire sur iPhone)
+async function preparePrintPhotos(list, presetName, onProgress) {
+  const result = new Map();
+  const withPhoto = list.filter(p => p.photoUrl);
+  const preset = PRINT_QUALITY_PRESETS[presetName];
+
+  if (!preset) {
+    withPhoto.forEach(p => result.set(p, p.photoUrl));
+    return result;
+  }
+
+  if (!printPhotoCache.has(presetName)) printPhotoCache.set(presetName, new Map());
+  const cache = printPhotoCache.get(presetName);
+  let done = 0;
+
+  for (const person of withPhoto) {
+    const src = person.photoUrl;
+    if (!cache.has(src)) {
+      try {
+        cache.set(src, await compressPhoto(src, preset.box, preset.quality));
+      } catch (err) {
+        console.warn('Compression impossible, photo originale utilisée', err);
+        cache.set(src, src);
+      }
+    }
+    result.set(person, cache.get(src));
+    done++;
+    if (onProgress) onProgress(done, withPhoto.length);
+  }
+
+  return result;
+}
+
+function escapeHtml(value = "") {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function getPeopleToPrint() {
+  const searchTerm = document.getElementById("searchInput").value.toLowerCase().trim();
+  if (!searchTerm) {
+    return window.people || [];
+  }
+  return window.filteredPeople || [];
+}
+
+function chunkArray(array, size) {
+  const chunks = [];
+  for (let i = 0; i < array.length; i += size) {
+    chunks.push(array.slice(i, i + size));
+  }
+  return chunks;
+}
+
+// Rendu d'une carte comme dans le PPTX : grande photo en haut, nom en gras, lignes de texte compactes
+function buildPrintableCard(person, photoSrc = person.photoUrl) {
+  const fullName = getFullName(person);
+  const role = person.role || "";
+  const specialty = person.specialty || "";
+  const email = person.email || "";
+  const phone = person.phone || "";
+
+  const photoHtml = photoSrc
+    ? `<div class="print-photo">
+         <img src="${photoSrc}" alt="${escapeHtml(fullName)}">
+       </div>`
+    : `<div class="print-photo">
+         <div class="print-photo-fallback">
+           ${escapeHtml(getInitials(person.firstName, person.lastName))}
+         </div>
+       </div>`;
+
+  const lines = [];
+
+  lines.push(`<div class="print-name">${escapeHtml(fullName)}</div>`);
+
+  if (role) {
+    lines.push(`<div class="print-role">${escapeHtml(role)}</div>`);
+  }
+
+  if (specialty) {
+    lines.push(`<div class="print-line">${escapeHtml(specialty)}</div>`);
+  }
+
+  if (email) {
+    lines.push(`<div class="print-email">${escapeHtml(email).replace("@", "@<wbr>")}</div>`);
+  }
+
+  if (phone) {
+    lines.push(`<div class="print-line">${escapeHtml(phone)}</div>`);
+  }
+
+  return `
+    <article class="print-card">
+      ${photoHtml}
+      <div class="print-text">
+        ${lines.join("")}
+      </div>
+    </article>
+  `;
+}
+
+
+// Proportions de la planche (largeur / hauteur) selon l'appareil.
+// iPhone / iPad (tous navigateurs) et Safari Mac ajoutent de grandes marges + pied de page :
+// planche un peu plus basse. Ailleurs (Chrome, Edge, Firefox, Android) les marges de 5 mm
+// sont respectées : planche plus haute, donc photos plus grandes.
+// Si ça déborde : augmenter la valeur. Trop de blanc en bas : la baisser.
+const PRINT_RATIO_APPLE = 1.6;
+const PRINT_RATIO_OTHER = 1.5;
+
+function getPrintRatio() {
+  const ua = navigator.userAgent;
+  const isIOS = /iPad|iPhone|iPod/.test(ua) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1); // iPad en mode "ordinateur"
+  const isMacSafari = /Macintosh/.test(ua) && /Safari/.test(ua) &&
+    !/Chrome|Chromium|Edg|OPR|Firefox/.test(ua);
+  return (isIOS || isMacSafari) ? PRINT_RATIO_APPLE : PRINT_RATIO_OTHER;
+}
+
+async function openPrintableView() {
+  const peopleToPrint = getPeopleToPrint();
+
+  if (!peopleToPrint.length) {
+    alert("Aucune carte à imprimer.");
+    return;
+  }
+
+  // Ouvrir la fenêtre tout de suite, sinon le navigateur la bloque après l'attente
+  const printWindow = window.open("", "_blank", "width=1400,height=900");
+  if (!printWindow) {
+    alert("Fenêtre bloquée : autorise les pop-ups pour ce site.");
+    return;
+  }
+  printWindow.document.open();
+  printWindow.document.write('<p id="prep" style="font:16px Arial,sans-serif;padding:24px">Préparation des photos…</p>');
+  printWindow.document.close();
+
+  const presetName = document.getElementById("printQuality")?.value || "light";
+  const photos = await preparePrintPhotos(peopleToPrint, presetName, (done, total) => {
+    if (printWindow.closed) return;
+    const el = printWindow.document.getElementById("prep");
+    if (el) el.textContent = `Préparation des photos… ${done}/${total}`;
+  });
+
+  if (printWindow.closed) return;
+
+  const pages = chunkArray(peopleToPrint, 10); // 2 lignes de 5, comme le document de référence
+
+  const htmlPages = pages.map((pagePeople) => `
+  <section class="print-page">
+    ${pagePeople.map((p) => buildPrintableCard(p, photos.get(p))).join("")}
+  </section>
+`).join("");
+
+  printWindow.document.open();
+  printWindow.document.write(`
+    <!DOCTYPE html>
+    <html lang="fr">
+    <head>
+      <meta charset="UTF-8">
+      <title>Trombinoscope imprimable</title>
+      <style>
+        /* Mise en page calquée sur le trombinoscope PPTX :
+           A4 paysage, marges minimales, 5 colonnes x 2 lignes,
+           photos maximisées occupant tout l'espace disponible */
+
+        @page {
+          size: A4 landscape;
+          margin: 5mm;
+        }
+
+        * {
+          box-sizing: border-box;
+          margin: 0;
+          padding: 0;
+        }
+
+        html, body {
+          font-family: Arial, sans-serif;
+          color: #111;
+          background: #fff;
+        }
+
+        body {
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+
+        .toolbar {
+          display: flex;
+          justify-content: center;
+          gap: 12px;
+          padding: 12px;
+          position: sticky;
+          top: 0;
+          background: #fff;
+          border-bottom: 1px solid #ddd;
+          z-index: 10;
+        }
+
+        .toolbar button {
+          padding: 10px 14px;
+          border: 1px solid #bbb;
+          background: #fff;
+          cursor: pointer;
+          border-radius: 8px;
+          font-size: 14px;
+        }
+
+        .print-wrapper {
+          padding: 0;
+        }
+
+        /* PLANCHE AUX PROPORTIONS FIXES
+           Safari iOS ajoute ses marges, son pied de page (URL, date) et met la page
+           à l'échelle : une hauteur fixe en mm (ancien réglage 66 mm) ne tient pas
+           toujours. Ici la hauteur de la planche est calculée à partir de sa largeur
+           (largeur / hauteur = --ratio) : elle ne peut plus déborder sur la feuille suivante.
+           Les photos prennent la place qui reste après les textes.
+           La valeur dépend de l'appareil : voir getPrintRatio(). */
+        .print-page {
+          --ratio: ${getPrintRatio()};
+          width: 100%;
+          aspect-ratio: var(--ratio);
+          overflow: hidden;
+          margin: 0 auto;
+          display: grid;
+          grid-template-columns: repeat(5, minmax(0, 1fr));
+          /* 2 rangées de cartes = [photos] [textes] [photos] [textes] */
+          grid-template-rows: minmax(0, 1fr) auto minmax(0, 1fr) auto;
+          column-gap: 3mm;
+          row-gap: 1mm;
+          break-inside: avoid;
+          page-break-inside: avoid;
+        }
+
+        /* Chaque carte occupe 2 lignes de la planche (photo + texte).
+           Avec subgrid, toutes les photos d'une rangée ont la même hauteur,
+           même si un nom ou un email passe sur 2 lignes. */
+        .print-card {
+          grid-row: span 2;
+          display: grid;
+          grid-template-rows: minmax(0, 1fr) auto; /* secours si subgrid non géré */
+          grid-template-rows: subgrid;
+          text-align: center;
+          overflow: hidden;
+          min-height: 0;
+          min-width: 0;
+        }
+
+        .print-photo {
+          position: relative;
+          min-height: 0;
+          overflow: hidden;
+          background: #fff;
+        }
+
+        /* Image droite, plein cadre, centrée, cadrée sur le visage */
+        .print-photo img {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          object-position: center 22%;
+          display: block;
+        }
+
+        .print-photo-fallback {
+          position: absolute;
+          inset: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: #ececec;
+          font-size: 46px;
+          font-weight: 700;
+          color: #777;
+        }
+
+        /* Bloc texte sous la photo, hauteur naturelle */
+        .print-text {
+          align-self: start;
+          padding-bottom: 1.5mm;
+        }
+
+        .print-name {
+          font-size: 15px;
+          font-weight: 700;
+          line-height: 1.1;
+        }
+
+        .print-role {
+          font-size: 13px;
+          line-height: 1.1;
+          font-weight: 700;
+          margin: 0;
+        }
+
+        .print-line {
+          font-size: 13px;
+          line-height: 1.1;
+          margin: 0;
+        }
+
+        .print-email {
+          font-size: 12.5px;
+          line-height: 1.1;
+          margin: 0 auto;
+          max-width: 100%;
+          white-space: normal;
+          overflow-wrap: anywhere;
+          word-break: break-word;
+          text-align: center;
+        }
+
+        /* Aperçu écran : séparer visuellement les pages */
+        @media screen {
+          .print-page {
+            border: 1px dashed #ccc;
+            margin-bottom: 12px;
+          }
+        }
+
+        @media print {
+          html, body {
+            width: 100%;
+            margin: 0;
+            padding: 0;
+          }
+
+          .toolbar {
+            display: none;
+          }
+
+          .print-wrapper {
+            padding: 0;
+          }
+
+          .print-page {
+            width: 100%;
+            margin: 0;
+            border: none;
+          }
+
+          .print-page {
+            break-after: page;
+            page-break-after: always;
+          }
+
+          .print-page:last-child {
+            break-after: auto;
+            page-break-after: auto;
+          }
+        }
+
+      </style>
+    </head>
+    <body>
+      <div class="toolbar">
+        <button onclick="window.print()">Imprimer / Enregistrer en PDF</button>
+        <button onclick="window.close()">Fermer</button>
+      </div>
+
+      <div class="print-wrapper">
+        ${htmlPages}
+      </div>
+    </body>
+    </html>
+  `);
+
+  printWindow.document.close();
+}
+
+
+
+        renderTrombinoscope();
+    </script>
+</body>
+</html>
